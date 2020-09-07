@@ -16,11 +16,6 @@ e.g. get the response from cache when the rate limit is exceeded or always get a
 
 Using [wildcards](#wildcards) in host names is also supported.
 
-## Notice
-
-You have to use the [v2 branch](https://github.com/hamburgscleanest/guzzle-advanced-throttle/tree/v2) 
-if you are using Laravel or any Illuminate component below version `5.7`. 
-
 ## Install
 
 Via Composer
@@ -119,7 +114,11 @@ Responses with an error status code `4xx` or `5xx` will not be cached (even with
 
 ##### `array` (default)
 
-Works out of the box.
+Works out of the box. However it `does not persist` anything. 
+This one will only work within the same scope.
+It's set as a default because it doesn't need extra configuration.
+
+The recommended adapter is the `laravel` one.
 
 ----------
 
@@ -129,9 +128,7 @@ You need to provide a config (`Illuminate\Config\Repository`) for this adapter.
 
 ----------
 
-##### Custom (Implements `hamburgscleanest\GuzzleAdvancedThrottle\Cache\Interfaces\StorageInterface`)
-
-> Available in version 2.0.5 and higher
+##### `custom` (Implements `hamburgscleanest\GuzzleAdvancedThrottle\Cache\Interfaces\StorageInterface`)
 
 When you create a new implementation, pass the class name to the `RequestLimitRuleset::create` method. 
 You'll also need to implement any sort of configuration parsing your instance needs.
@@ -155,6 +152,19 @@ $stack->push($throttle());
 
 #### Laravel Drivers
 
+##### General settings
+
+These values can be set for every adapter.
+
+``` php
+    'cache' => [
+        'ttl' => 900, // How long should responses be cached for (in seconds)?
+        'allow_empty' => true // When this is set to false, empty responses won't be cached.
+    ]
+```
+
+----------
+
 ##### File
 
 ``` php
@@ -162,7 +172,8 @@ $stack->push($throttle());
         'driver'  => 'file',
         'options' => [
             'path' => './cache'
-        ]
+        ],
+        ...
     ]
 ```
 
@@ -182,7 +193,8 @@ $stack->push($throttle());
                     'database' => 0,
                 ],
             ]
-        ]
+        ],
+        ...
     ]
 ```
 
@@ -201,7 +213,8 @@ $stack->push($throttle());
                     'weight' => 100,
                 ],
             ]
-        ]
+        ],
+        ...
     ]
 ```
 
@@ -266,7 +279,12 @@ $rules = new RequestLimitRuleset(
 
 #### With forced caching - `force-cache`
 
-Always use cached responses when available to spare your rate limits. As long as there is a response in cache for the current request it will return the cached response. It will only actually send the request when it is not cached. If there is no cached response and the request limits are exceeded, it will throw `429 - Too Many Requests`.
+Always use cached responses when available to spare your rate limits. 
+As long as there is a response in cache for the current request it will return the cached response. 
+It will only actually send the request when it is not cached. 
+If there is no cached response and the request limits are exceeded, it will throw `429 - Too Many Requests`.
+
+> You might want to disable the caching of empty responses with this option (see [General Driver Settings](https://github.com/hamburgscleanest/guzzle-advanced-throttle#laravel-drivers)).
 
 ``` php
 $rules = new RequestLimitRuleset(
@@ -279,8 +297,6 @@ $rules = new RequestLimitRuleset(
 ----------
 
 #### Custom caching strategy
-
-> Available in version 2.0.5 and higher
 
 Your custom caching strategy must implement `CacheStrategy`.
 It is suggested you use `Cacheable` for a parent class.
@@ -303,8 +319,6 @@ $throttle = new ThrottleMiddleware($rules);
 ----------
 
 ### Wildcards
-
-> Available in version 2.x.x and higher
 
 If you want to define the same rules for multiple different hosts, you can use wildcards.
 A possible use case can be subdomains:

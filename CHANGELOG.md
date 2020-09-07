@@ -23,6 +23,77 @@ Updates should follow the [Keep a CHANGELOG](http://keepachangelog.com/) princip
 
 ----------
 
+## 4.1.1
+
+### Security
+This fixes a security vulnerabilities in `symfony/http-foundation` and `symfony/http-kernel`:  
+
+- https://github.com/FriendsOfPHP/security-advisories/blob/master/symfony/http-foundation/CVE-2019-18888.yaml
+- https://github.com/FriendsOfPHP/security-advisories/blob/master/symfony/http-kernel/CVE-2019-18887.yaml
+
+----------
+
+## 4.1.0
+
+### Compatibility
+Ensure compatibility to `Laravel 6.0`.
+
+----------
+
+## 4.0.3
+
+### Security
+Updated external dependencies.
+
+----------
+
+## 4.0.2
+
+### Security
+This fixes a security vulnerability in `symfony/http-foundation`:
+
+https://github.com/FriendsOfPHP/security-advisories/blob/master/symfony/http-foundation/CVE-2019-10913.yaml
+
+----------
+
+## 4.0.1
+
+Simplified and hardened error status code detection.
+
+----------
+
+## 4.0.0
+
+### Added
+- Compatibility with Laravel / Illuminate 5.8
+- Upgraded PHPUnit to version 8
+
+### Removed
+- Dropped support for PHP 7.1
+
+----------
+
+## 3.1.0
+
+### Fixed
+#### Changed the cached representation of the response.
+This should solve the issue where one had to use `(string) $response->getBody()` instead of `$response->getBody()->getContents()`.
+
+### Laravel storage adapters
+
+You can disable caching for empty responses in the config now by setting `allow_empty` to `false`.
+
+Check out the [docs](https://github.com/hamburgscleanest/guzzle-advanced-throttle#laravel-drivers) for more information on how to set it.
+
+----------
+
+## 3.0.1
+
+### Fixed
+- Fixed a problem when generating the cache key for a request without parameters
+
+----------
+
 ## 3.0.0
 
 This release adds compatibility with Laravel 5.7 (Illuminate).

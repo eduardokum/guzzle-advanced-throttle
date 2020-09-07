@@ -2,6 +2,7 @@
 
 namespace hamburgscleanest\GuzzleAdvancedThrottle\Cache\Adapters;
 
+use GuzzleHttp\Psr7\Response;
 use hamburgscleanest\GuzzleAdvancedThrottle\Cache\Interfaces\StorageInterface;
 use hamburgscleanest\GuzzleAdvancedThrottle\Helpers\RequestHelper;
 use Psr\Http\Message\RequestInterface;
@@ -20,6 +21,8 @@ abstract class BaseAdapter implements StorageInterface
     protected const STORAGE_KEY = 'requests';
     /** @var int Time To Live in minutes */
     protected $_ttl = self::DEFAULT_TTL;
+    /** @var bool When set to 'false' empty responses won't be cached. */
+    protected $_allowEmptyValues = true;
 
     /**
      * @param RequestInterface $request
@@ -28,6 +31,11 @@ abstract class BaseAdapter implements StorageInterface
      */
     final public function saveResponse(RequestInterface $request, ResponseInterface $response) : void
     {
+        if (!$this->_allowEmptyValues && $response->getBody()->getSize() === 0)
+        {
+            return;
+        }
+
         [$host, $path] = RequestHelper::getHostAndPath($request);
 
         $this->_saveResponse($response, $host, $path, RequestHelper::getStorageKey($request));
@@ -56,7 +64,7 @@ abstract class BaseAdapter implements StorageInterface
      * @param string $host
      * @param string $path
      * @param string $key
-     * @return null|ResponseInterface
+     * @return null|Response
      */
-    abstract protected function _getResponse(string $host, string $path, string $key) : ?ResponseInterface;
+    abstract protected function _getResponse(string $host, string $path, string $key) : ?Response;
 }

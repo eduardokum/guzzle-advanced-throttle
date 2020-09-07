@@ -3,6 +3,8 @@
 namespace hamburgscleanest\GuzzleAdvancedThrottle\Cache\Adapters;
 
 use DateTime;
+use GuzzleHttp\Psr7\Response;
+use hamburgscleanest\GuzzleAdvancedThrottle\Cache\CachedResponse;
 use hamburgscleanest\GuzzleAdvancedThrottle\Cache\Helpers\CacheConfigHelper;
 use hamburgscleanest\GuzzleAdvancedThrottle\Exceptions\LaravelCacheConfigNotSetException;
 use hamburgscleanest\GuzzleAdvancedThrottle\RequestInfo;
@@ -36,6 +38,7 @@ class LaravelAdapter extends BaseAdapter
         $cacheRepository = new Repository($cacheConfig);
         $this->_cacheManager = CacheConfigHelper::getCacheManager($cacheRepository);
         $this->_ttl = $cacheRepository->get('ttl', self::DEFAULT_TTL);
+        $this->_allowEmptyValues = $cacheRepository->get('allow_empty', $this->_allowEmptyValues);
     }
 
     /**
@@ -50,7 +53,7 @@ class LaravelAdapter extends BaseAdapter
         $this->_cacheManager->put(
             $this->_buildKey($host, $key),
             RequestInfo::create($requestCount, $expiresAt->getTimestamp(), $remainingSeconds),
-            $remainingSeconds / 60
+            $remainingSeconds
         );
     }
 
@@ -83,7 +86,11 @@ class LaravelAdapter extends BaseAdapter
      */
     protected function _saveResponse(ResponseInterface $response, string $host, string $path, string $key) : void
     {
-        $this->_cacheManager->put($this->_buildResponseKey($host, $path, $key), $response, $this->_ttl);
+        $this->_cacheManager->put(
+            $this->_buildResponseKey($host, $path, $key),
+            new CachedResponse($response),
+            $this->_ttl
+        );
     }
 
     /**
@@ -101,11 +108,13 @@ class LaravelAdapter extends BaseAdapter
      * @param string $host
      * @param string $path
      * @param string $key
-     * @return null|ResponseInterface
+     * @return null|Response
      */
-    protected function _getResponse(string $host, string $path, string $key) : ?ResponseInterface
+    protected function _getResponse(string $host, string $path, string $key) : ?Response
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->_cacheManager->get($this->_buildResponseKey($host, $path, $key));
+        /** @var CachedResponse|null $cachedResponse */
+        $cachedResponse = $this->_cacheManager->get($this->_buildResponseKey($host, $path, $key));
+
+        return $cachedResponse ? $cachedResponse->getResponse() : null;
     }
 }
