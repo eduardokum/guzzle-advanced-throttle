@@ -37,7 +37,7 @@
         "illuminate/redis": "*",
         "illuminate/database": "*",
         "predis/predis": "^1.1",
-        "symfony/http-kernel": "~3|~4|~5.0"
+        "symfony/http-kernel": "*"
     },
     "require-dev": {
         "phpunit/phpunit": "^8.0.4"
