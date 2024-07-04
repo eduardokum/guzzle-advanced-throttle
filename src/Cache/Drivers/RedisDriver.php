@@ -17,11 +17,6 @@ class RedisDriver extends LaravelDriver
      */
     protected function _setContainer() : void
     {
-        if (!isset($this->_options['database']))
-        {
-            throw new RedisDatabaseNotSetException();
-        }
-
-        $this->_container['redis'] = new RedisManager(null, 'predis', ['default' => $this->_options['database']]);
+        $this->_container['redis'] = new RedisManager(null, 'predis', config('database.redis'));
     }
 }
